@@ -137,10 +137,24 @@ canonical-distinfo-url: {{base-url}}/{{name}}/{{version}}/distinfo.txt
       (file-write-date path)
       (apply #'max 0 (mapcar #'effective-mtime (fad:list-directory path)))))
 
-(defun format-date (universal-time)
+(defun compute-version (version)
+  (if (keywordp version)
+      (let ((date-fn (find-symbol (string version) :quickdist)))
+        (if (null date-fn)
+            (error "No version function found for ~A" version)
+            (funcall date-fn (get-universal-time))))
+      version))
+
+(defun today (universal-time)
   (let* ((time (multiple-value-list (decode-universal-time universal-time)))
          (timestamp (reverse (subseq time 0 6))))
     (format nil "~{~2,'0d~}" timestamp)))
+
+(defun iso-date (time)
+  (multiple-value-bind (_s _m _h date month year _d _daylight-p _zone)
+      (decode-universal-time time)
+    (declare (ignore _s _m _h _d _daylight-p _zone))
+    (format nil "~D-~2,'0D-~2,'0D" year month date)))
 
 (defun md5sum (path)
   (ironclad:byte-array-to-hex-string
@@ -606,7 +620,7 @@ If this function return nil, then such dependency should be ignored.
 
    `get-ignore-dependency-p' is the same as `get-ignore-filename-p', but for filtering
     project's dependencies."
-  (let* ((version (if (not (eq version :today)) version (format-date (get-universal-time))))
+  (let* ((version (compute-version version))
          (projects-path (fad:pathname-as-directory (probe-file projects-dir)))
          (template-data (list :name name :version version
                               :base-url (string-right-trim "/" base-url)
