@@ -606,7 +606,7 @@ If this function return nil, then such dependency should be ignored.
 
 
 (defun quickdist (&key name
-                    (version :today)
+                    (version :iso-date)
                     base-url
                     projects-dir
                     dists-dir
