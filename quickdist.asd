@@ -3,7 +3,8 @@
   :author "Orivej Desh <orivej@gmx.fr>"
   :licence "Unlicense <http://unlicense.org/UNLICENSE>"
   :version (:read-file-form "version.lisp-expr")
-  :depends-on (alexandria
+  :depends-on ((:require "uiop")
+               alexandria
                cl-fad
                external-program
                babel-streams

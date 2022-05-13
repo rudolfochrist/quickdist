@@ -607,6 +607,23 @@ If this function return nil, then such dependency should be ignored.
                                 :stream system-index
                                 :pretty nil))))))))))
 
+(defun pathname-directory-name (pathname)
+  (car (last (pathname-directory pathname))))
+
+(defun archive-directory-p (dir)
+  "Non-nil if DIR is a QL archive directory."
+  (string= "archive" (pathname-directory-name dir)))
+
+
+(defun write-versions-file (name dists-dir base-url)
+  (let ((filespec (merge-pathnames (format nil "~A-versions.txt" name) dists-dir))
+        (dist (merge-pathnames (format nil "~A/" name) dists-dir)))
+    (with-open-file (out filespec :direction :output :if-exists :supersede)
+      (dolist (dir (uiop:subdirectories dist))
+        (unless (archive-directory-p dir)
+          (let ((version (pathname-directory-name dir)))
+            (format out "~A ~A/~A/distinfo.txt~&" version base-url version)))))))
+
 
 (defun quickdist (&key name
                     (version :iso-date)
@@ -641,6 +658,7 @@ If this function return nil, then such dependency should be ignored.
     (create-dist projects-path dist-path archive-path archive-url
                  :get-ignore-filename-p get-ignore-filename-p
                  :get-ignore-dependency-p get-ignore-dependency-p)
+    (write-versions-file name dists-dir base-url)
     (let ((distinfo (render-template *distinfo-template* template-data)))
       (dolist (path (list (make-pathname :name "distinfo" :type "txt" :defaults dist-path)
                           distinfo-path))
