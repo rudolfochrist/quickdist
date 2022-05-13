@@ -145,10 +145,13 @@ canonical-distinfo-url: {{base-url}}/{{name}}/{{version}}/distinfo.txt
             (funcall date-fn (get-universal-time))))
       version))
 
-(defun today (universal-time)
+(defun format-date (universal-time)
   (let* ((time (multiple-value-list (decode-universal-time universal-time)))
          (timestamp (reverse (subseq time 0 6))))
     (format nil "~{~2,'0d~}" timestamp)))
+
+(defun today (universal-time)
+  (format-date universal-time))
 
 (defun iso-date (time)
   (multiple-value-bind (_s _m _h date month year _d _daylight-p _zone)
